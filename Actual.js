@@ -37,7 +37,7 @@ var Actual = {
 		get: function cookieGet(name) {
 			// Searches document.cookie for a cookie by a given name and returns the value if one is found.
 			var temp = document.cookie.split(/;\s*/);
-			for(var i = 0; i < temp.length; i++) {
+			for(var i = 0, l = temp.length; i < l; i++) {
 				var foundName = temp[i].split('=')[0];
 				if (foundName === name) return temp[i].split('=')[1];
 			}
@@ -78,11 +78,13 @@ var Actual = {
 		},
 		
 		save: function fileSave(name, content) {
-			// Save content to the file 
+			// Save content to the file
+			// If no contents are given, the file is wiped out
+			// Be careful!
 			return Actual.util.ajax('Actual.php', {
 				op: 'save',
 				f: name,
-				d: JSON.stringify(content)
+				d: content || ''
 			}, 'GET', function(result) {
 				if (result) {
 					return true;
@@ -96,16 +98,21 @@ var Actual = {
 
 	route: {
 		add: function routeAdd(path, name, parent, handler) {
+			// Registers a route and its info
 			Actual.routes[path] = {
 				'name': name, 'path': path, 'handler': handler, 'parent': parent
 			};
 		},
 		
 		remove: function routeRemove(path) {
+			// Deletes a route
 			delete Actual.routes[path];
 		},
 		
 		listen: function routeListen(element) {
+			// Listens for changes to the hash portion of the URL
+			// If a hash that has been registered as a route is used, it runs the handler,
+			// giving it the element it has been allowed to work within, and any arguments
 			if (Object.keys(Actual.routes).length > 0) {
 				if (element) {
 					var handler = function hashChange(event) {
@@ -142,9 +149,71 @@ var Actual = {
 		},
 	
 		move: function routeMove(path) {
+			// Moves the browser to the given hash route
 			if (Actual.routes[path]) {
 				window.location.href = window.location.href.replace(/#(.*)$/, '') + '#' + path
 			}
+		},
+	},
+	
+	dropdown: {
+		values: function(data, targetID, swap) {
+			// Populates a dropdown using an object's keys as the text and each key's
+			// value as the option value
+			if (!swap) swap = false;
+			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
+			var element = document.getElementById(targetID);
+			for (var i = 0, l = Object.getOwnPropertyNames(data).length; i < l; i++) {
+				var key = Object.getOwnPropertyNames(data)[i];
+				var value = data[key];
+				var option = document.createElement('option');
+				option.textContent = (swap) ? value : key;
+				option.setAttribute('value', (swap) ? key : value);
+				element.appendChild(option);
+			};
+		},
+		
+		byKey: function(data, targetID, valueKey, textKey) {
+			// Populates a dropdown using an array of objects, using the given textKey
+			// as the option text, and valueKey as the value from each object
+			if (!valueKey && !textKey) return false;
+			if (valueKey && !textKey) textKey = valueKey;
+			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
+			var element = document.getElementById(targetID);
+			for (var i = 0, l = data.length; i < l; i++) {
+				var text = data[i][textKey] || '';
+				var value = data[i][valueKey] || '';
+				var option = document.createElement('option');
+				option.textContent = text;
+				option.setAttribute('value', value);
+				element.appendChild(option);
+			}
+		},
+		
+		selectByText: function(targetID, text) {
+			// Selects an option based on the given text value, which must be exact
+			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
+			var element = document.getElementById(targetID);
+			var children = element.children;
+			for (var i = 0, l = children.length; i < l; i++) {
+				children[i].selected = false;
+				var data = children[i].textContent;
+				if (data == text) children[i].selected = true;
+			}
+		},
+
+		hasOptions: function(targetID) {
+			// Returns true if the select has at least one option
+			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
+			var element = document.getElementById(targetID);
+			return (element.children.length > 0) ? true : false;
+		},
+		
+		empty: function empty(targetID) {
+			// Empties a select (or anything) of its children
+			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
+			var element = document.getElementById(targetID);
+			while (element.firstChild) element.removeChild(element.firstChild);
 		},
 	},
 
@@ -165,7 +234,7 @@ var Actual = {
 			// Useful for creating generic but unique IDs, session keys, or whatever
 			length = length || 20;
 			bits = bits || 36;
-			var result = "";
+			var result = '';
 			var temp;
 			while (result.length < length) {
 				temp = Math.random().toString(bits).slice(2);
@@ -173,7 +242,40 @@ var Actual = {
 			}
 			return result.toUpperCase();
 		},
-
+		
+		ltrim: function ltrim(string) {
+			return string.replace(/^\s+/, '');
+		},
+		
+		rtrim: function rtrim(string) {
+			return string.replace(/\s+$/, '');
+		},
+		
+		slugify: function slugify(string) {
+			return text.toString().toLowerCase().trim().replace(/&/g, '-and-').replace(/[\s\W-]+/g, '-').replace(/\-\-+/g, '-').replace(/^-+|-+$/g, '');
+		}
+	},
+	
+	array: {
+		pushUnique: function pushUnique(array, item) {
+			// Pushes an item to the given array given that it's not already there
+			if (array.indexOf(item) === -1) {
+				array[array.length] = item;
+				return true;
+			}
+			return false;
+		},
+		
+		unique: function arrayUnique(array, alsoSort) {
+			// Uniques the given array, and also optionally sorts the array once done
+			if (!alsoSort) alsoSort = false;
+			var temp = [];
+			for (var i = 0, l = array.length; i < l; i++) {
+				if (temp.indexOf(array[i]) === -1 && array[i] !== '') temp[temp.length] = array[i];
+			}
+			if (alsoSort) temp.sort(); 
+			return temp;
+		},
 	},
 	
 	util: {
@@ -195,7 +297,7 @@ var Actual = {
 			
 			if (!stack) return false;
 			var lines = stack.split("\n");
-			for (var i = 0; i < lines.length; i++) {
+			for (var i = 0, l = lines.length; i < l; i++) {
 				// Chrome console
 				if (lines[i].indexOf("at Object.InjectedScript.") >= 0) return true;  
 				// Firefox console
@@ -207,6 +309,7 @@ var Actual = {
 		},
 		
 		generateUUID: function generateUUID() {
+			// Generates a compliant UUID
 			var d = new Date().getTime();
 			if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
 				d += performance.now();
@@ -219,6 +322,7 @@ var Actual = {
 		},
 	
 		ajax: function ajax(url, data, method, goodHandler, badHandler) {
+			// A simple AJAX function 
 			var xhr = (window.XMLHttpRequest) ? new XMLHttpRequest : new ActiveXObject('Microsoft.XMLHTTP');
 			if (!method) method = 'GET';
 			if (method === 'POST') {
@@ -248,6 +352,11 @@ var Actual = {
 			xhr.send(null);
 			return xhr;
 		},
+		
+		isIE: function isIE() {
+			return /*@cc_on!@*/false;
+		},
+	
 	},
 
 }
