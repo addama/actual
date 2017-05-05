@@ -23,7 +23,7 @@ var Actual = {
 	},
 	
 	cookie: {
-		bake: function cookieBake(name, value, expires) {
+		put: function cookieBake(name, value, expires) {
 			// Bakes a new cookie. If no expires date is provided, the cookie will become a session cookie.
 			var cookie = name + '=' + encodeURI(value) + ';';
 
@@ -44,7 +44,7 @@ var Actual = {
 			return false;
 		},
 
-		eat: function cookieEat(name) {
+		remove: function cookieEat(name) {
 			// Deletes a given cookie by setting an expiration date in the past
 			if (Actual.cookie.get(name)) {
 				var date = new Date(1985, 3, 22);
@@ -156,8 +156,53 @@ var Actual = {
 		},
 	},
 	
+	storage: {
+		isAvailable: function isAvailable() {
+			// Determines if localStorage is available
+			try {
+				var storage = window.localStorage;
+				strorage.setItem('__test__', '?');
+				storage.removeItem('__test__');
+				return true;
+			} catch(e) {
+				return false;
+			}
+		},
+		
+		put: function storagePut(key, value) {
+			// Adds a key/value pair to localStorage
+			try {
+				window.localStorage.setItem(key, value);
+			} catch(e) {
+				console.error('Could not save {'+key+':'+value+';} to localStorage:', e);
+			}
+		},
+		
+		get: function storageGet(key) {
+			// Retrieves a localStorage value for the given key
+			window.localStorage.getItem(key);
+		},
+		
+		remove: function storageRemove(key) {
+			// Removes the given key from localStorage
+			// Does not complain if that key doesn't exist
+			window.localStorage.removeItem(key);
+		},
+		
+		empty: function storageEmpty() {
+			// Clears localStorage 
+			window.localStorage.clear();
+		},
+		
+		size: function storageSize() {
+			// Returns the byte size of localStorage
+			var size = 1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length;
+			return size;
+		},
+	},
+	
 	dropdown: {
-		values: function(data, targetID, swap) {
+		values: function values(data, targetID, swap) {
 			// Populates a dropdown using an object's keys as the text and each key's
 			// value as the option value
 			if (!swap) swap = false;
@@ -173,7 +218,7 @@ var Actual = {
 			};
 		},
 		
-		byKey: function(data, targetID, valueKey, textKey) {
+		byKey: function byKey(data, targetID, valueKey, textKey) {
 			// Populates a dropdown using an array of objects, using the given textKey
 			// as the option text, and valueKey as the value from each object
 			if (!valueKey && !textKey) return false;
@@ -190,7 +235,7 @@ var Actual = {
 			}
 		},
 		
-		selectByText: function(targetID, text) {
+		selectByText: function selectByText(targetID, text) {
 			// Selects an option based on the given text value, which must be exact
 			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
 			var element = document.getElementById(targetID);
@@ -202,7 +247,7 @@ var Actual = {
 			}
 		},
 
-		hasOptions: function(targetID) {
+		hasOptions: function hasOptions(targetID) {
 			// Returns true if the select has at least one option
 			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
 			var element = document.getElementById(targetID);
@@ -254,6 +299,17 @@ var Actual = {
 		slugify: function slugify(string) {
 			return text.toString().toLowerCase().trim().replace(/&/g, '-and-').replace(/[\s\W-]+/g, '-').replace(/\-\-+/g, '-').replace(/^-+|-+$/g, '');
 		}
+	},
+	
+	type: {
+		isString: function isString(string) {
+			return typeof string === 'string';
+		},
+		
+		isArray: function isArray(array) {
+			return array && !array.propertyIsEnumerable('length') 
+				&& typeof array === 'object' && typeof array.length === 'number';
+		},
 	},
 	
 	array: {
@@ -309,9 +365,9 @@ var Actual = {
 		},
 		
 		generateUUID: function generateUUID() {
-			// Generates a compliant UUID
+			// Generates a version 4 UUID
 			var d = new Date().getTime();
-			if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
+			if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
 				d += performance.now();
 			}
 			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -332,7 +388,7 @@ var Actual = {
 			if (data instanceof Object) {
 				var query = [];
 				for (var key in data) {
-					query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+					query[query.length] = encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 				}
 				data = query.join('&');
 			}
@@ -355,8 +411,39 @@ var Actual = {
 		
 		isIE: function isIE() {
 			return /*@cc_on!@*/false;
-		},
+		},	
 	
+		memoize: function memoize(func) {
+			// Caches the results of the given function so that heavy
+			// computations don't have to be redone over and over
+			return function() {
+				var args = Array.prototype.slice.call(arguments), hash = '', i = args.length;
+				var currentArg = null;
+				while (i--) {
+					currentArg = args[i];
+					hash += (currentArg === Object(currentArg)) ?
+					JSON.stringify(currentArg) : currentArg;
+					fn.memoize || (fn.memoize = {});
+				}
+				return (hash in fn.memoize) ? fn.memoize[hash] : fn.memoize[hash] = fn.apply(this, args);
+			}
+		},
+		
+		debounce: function debounce(func, wait, isImmediate) {
+			// Prevents a handler function from being executed repeatedly
+			var timeout;
+			return function() {
+				var context = this;
+				var later = function() {
+					timeout = null;
+					if (!isImmediate) func.apply(context, arguments);
+				};
+				var callNow = isImmediate && !timeout;
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+				if (callNow) func.apply(context, arguments);
+			};
+		},
 	},
 
 }
