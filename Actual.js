@@ -15,7 +15,7 @@ var Actual = {
 	
 	out: function out(message, type) {
 		// Writes log messages to a file
-		return Actual.util.ajax('Actual.php', {
+		return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
 			op: 'log',
 			m: message || 'No message',
 			t: type || 'info',
@@ -63,12 +63,12 @@ var Actual = {
 	file: {
 		load: function fileLoad(name, handler) {
 			// Load a file and return the contents
-			return Actual.util.ajax('Actual.php', {
+			return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
 				op: 'load',
 				f: name
 			}, 'GET', function(result) {
 				if (result) {
-					handler(result);
+					if (handler) handler(result);
 					return true;
 				} else {
 					Actual.log(name + ' could not be loaded');
@@ -81,7 +81,7 @@ var Actual = {
 			// Save content to the file
 			// If no contents are given, the file is wiped out
 			// Be careful!
-			return Actual.util.ajax('Actual.php', {
+			return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
 				op: 'save',
 				f: name,
 				d: content || ''
@@ -174,7 +174,7 @@ var Actual = {
 			try {
 				window.localStorage.setItem(key, value);
 			} catch(e) {
-				console.error('Could not save {'+key+':'+value+';} to localStorage:', e);
+				console.error('Could not save {'+key+':'+value+'} to localStorage:', e);
 			}
 		},
 		
@@ -196,6 +196,7 @@ var Actual = {
 		
 		size: function storageSize() {
 			// Returns the byte size of localStorage
+			// Assumes UTF-8
 			var size = 1024 * 1024 * 5 - escape(encodeURIComponent(JSON.stringify(localStorage))).length;
 			return size;
 		},
@@ -265,7 +266,7 @@ var Actual = {
 	string: {
 		toTitleCase: function toTitleCase(string) {
 			// Converts a string to proper case: String, Addama, Power
-			return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+			return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()});
 		},
 		
 		htmlSpecialChars: function htmlSpecialChars(unsafe) {
@@ -277,6 +278,7 @@ var Actual = {
 		makeRandomString: function makeRandomString(length, bits) {
 			// Creates a randomized string of the given length, in the given bits
 			// Useful for creating generic but unique IDs, session keys, or whatever
+			// See also Actual.util.generateUUID()
 			length = length || 20;
 			bits = bits || 36;
 			var result = '';
@@ -289,27 +291,42 @@ var Actual = {
 		},
 		
 		ltrim: function ltrim(string) {
+			// Remove leading spaces on a string
 			return string.replace(/^\s+/, '');
 		},
 		
 		rtrim: function rtrim(string) {
+			// Remove trailing spaces on a string
 			return string.replace(/\s+$/, '');
 		},
 		
 		slugify: function slugify(string) {
+			// Returns a blog URL slug version of the given string
 			return text.toString().toLowerCase().trim().replace(/&/g, '-and-').replace(/[\s\W-]+/g, '-').replace(/\-\-+/g, '-').replace(/^-+|-+$/g, '');
 		}
 	},
 	
 	type: {
 		isString: function isString(string) {
+			// Checks if the given item is a string
 			return typeof string === 'string';
 		},
 		
 		isArray: function isArray(array) {
+			// Checks if the given item is an array
 			return array && !array.propertyIsEnumerable('length') 
 				&& typeof array === 'object' && typeof array.length === 'number';
 		},
+		
+		isEmail: function isEmail(string) {
+			// Validates email
+			return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+		},
+		
+		isPhone: function isPhone(string) {
+			// Validates phone number in a variety of formats
+			return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(string);
+		}
 	},
 	
 	array: {
@@ -410,6 +427,7 @@ var Actual = {
 		},
 		
 		isIE: function isIE() {
+			// Use black magic to determine if the browser is IE
 			return /*@cc_on!@*/false;
 		},	
 	
