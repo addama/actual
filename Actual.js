@@ -465,6 +465,34 @@ var Actual = {
 				if (callNow) func.apply(context, arguments);
 			};
 		},
+	
+		copyToClipboard: function copyToClipboard(text) {
+			// Copies some text to the clipboard
+			var hidden = document.createElement('textarea');
+			hidden.value = text;
+			document.body.appendChild(hidden);
+			hidden.select();
+			try {
+				document.execCommand('copy');
+				console.info('Copied '+text+' to clipboard!');
+			} catch(error) {
+				console.error('Couldn\'t copy '+text+' to clipboard', hidden, text);
+			}
+			hidden.remove();	
+		},
+
+		openEmail: function openEmail(email, subject, body) {
+			// Asks the browser to open whatever email handler it has set 
+			// If no default handler is set, the browser will open a popup asking the user to select
+			// a program or site to handle email requests
+			// mailto:test@test.com?&subject=test&body=test
+			if (!email) return false;
+			var string = 'mailto:'+email;
+			if (subject || body) string += '?';
+			if (subject) string += '&subject='+subject;
+			if (body) string += '&body='+body;
+			window.open(string);
+		},
 	},
 
 }
