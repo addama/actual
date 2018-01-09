@@ -4,13 +4,13 @@ var Actual = {
 	// The location of the main actual.php file
 	phpLoc: './',
 	
-	log: function log(message, type) {
+	log: function log() {
 		// A slightly more verbose console.log
 		// Does not do multiple arguments like console.log does, though
 		var caller = Actual.log.caller.name || '';
+		var args = [].slice.call(arguments);
 		var now = new Date().toISOString();
-		if (!type) type = 'info';
-		console.log(now, caller + '()', message);
+		console.log(now, caller + '()', args);
 	},
 	
 	out: function out(message, type) {
