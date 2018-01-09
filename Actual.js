@@ -493,6 +493,40 @@ var Actual = {
 			if (body) string += '&body='+body;
 			window.open(string);
 		},
+	
+		wait: function wait(ms) {
+			// Simulates an async call for a given or random number of milliseconds
+			// Actual.util.wait(1000).then(function() { /* Do your stuff 1 second later*/ });
+			ms = ms || Math.floor(Math.random()*(2000-800+1)+800);
+			return new Promise(function(resolve, reject) { 
+				setTimeout(resolve, ms)
+			});
+		},
+	
+		getFormData: function getFormData(parent) {
+			// Pulls input, textarea, checkbox, select, and radio values from elements 
+			// under the given parent, and returns an object where the name of the 
+			// element is the key, and its value as the value, along with other info
+			// that would be useful for validation and other decisions
+			//
+			// If the element is a normal input, the type will be the input type
+			var result = {};
+			var elements = document.getElementById(parent).querySelectorAll('input, textarea, select');
+			for (var i = 0, l = elements.length; i < l; i++) {
+				var element = elements[i];
+				var type = element.nodeName.toLowerCase();
+				var inputType = element.type.toLowerCase() || false;
+				result[element.name] = {
+					id: element.id || false,
+					name: element.name || false,
+					type: (type === 'input')? inputType : type,
+					value: (inputType === 'checkbox') ? element.checked: (element.value || ''),
+					required: element.required || false,
+					disabled: element.disabled || false,
+				}
+			}
+			return result;
+		},
 	},
 
 }
