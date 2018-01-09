@@ -1,45 +1,56 @@
 # actual
 A common function toolkit to speed up prototype and application development, for times when React would be too much, but jQuery or Underscore would be too little. 
 
-Pair with [selectah.js](https://github.com/addama/selectah), my minimal jQuery clone to speed up DOM creation/traversal.
+A few functions rely on the included Actual.php, which handles file reading/writing. If you do not need this functionality, or cannot use PHP in your environment, simply leave the file and those functions out. 
 
+Suggested companion libraries:
+ * [selectah.js](https://github.com/addama/selectah), my minimal jQuery clone to speed up DOM creation/traversal/modification.
+ * [Hash-Router](http://michaelsogos.github.io/Hash-Router/), the best SPA hash/history router I've found.
+ * [UIKit](https://getuikit.com/), a decent CSS framework that can act as a starting point for your design.
+ * [Mithril](https://mithril.js.org/), my favorite tiny templating engine.
+ 
 # General
 
-#### log()
+### log()
 	Actual.log([*])
 
 	Actual.log('UserName is "', userName, '"')
 	--> '2011-10-05T14:48:00.000Z handleLogin() UserName is "addama"'
-A more verbose version of console.log, which has a timestamp and the name of the function that called it.
+**Relies on Actual.php**
+
+A more verbose version of `console.log`, which has a timestamp and the name of the function that called it.
+Takes any number of arguments, just like `console.log`.
 ***
-#### out()
+### out()
 	Actual.out(message, [type])
 	
 	Actual.out('Will write to a log file using the included PHP file')
+**Relies on Actual.php**
+
 Returns the promise used to do the write.
 
 # Cookie
 
-#### put()
+### put()
 	Actual.cookie.put(key, value, [expires])
 
 	Actual.cookie.put('UserName', 'addama')
 Writes a cookie with the given key and value.
 Will optionally set an expire date if given.
 ***
-#### get()
+### get()
 	Actual.cookie.get(key)
 
 	Actual.cookie.get('UserName')
 Returns the cookie for the given key, or false.
 ***
-#### remove()
+### remove()
 	Actual.cookie.remove(key)
 
 	Actual.cookie.remove('UserName')
 Removes the cookie for the given key, if it exists.
 ***
-#### exists()
+### exists()
 	Actual.cookie.exists(key)
 
 	Actual.cookie.exists('UserName')
@@ -47,79 +58,83 @@ Checks if the given cookie key has been set.
 
 # File
 
-#### load()
+### load()
 	Actual.file.load(name, handler)
 
 	Actual.file.load('filename.txt', function(result) { /* Consume the file */ })
+**Relies on Actual.php**
+
 Uses the included PHP file to asynchronously load the contents of a file.
 Returns the promise used to do the read.
 ***
-#### save()
+### save()
 	Actual.file.save(name, content)
 
 	Actual.file.save('filename.txt', 'This will be written to filename.txt')
+**Relies on Actual.php**
+
 **Destructively** writes the given contents to a file.
 
 # Storage
 
-#### isAvailable()
+### isAvailable()
 	Actual.storage.isAvailable()
 Returns true if localStorage is available by testing a temporary write, otherwise returns false.
 ***
-#### put()
+### put()
 	Actual.storage.put(key, value)
 
 	Actual.storage.put('UserName', 'addama')
 Stores the given value in localStorage under the given key. Values are converted to a JSON string, so you may need to `JSON.parse()` it when you get it back out.
 ***
-#### get()
+### get()
 	Actual.storage.get(key)
 
 	Actual.storage.get('UserName')
 	-> 'addama'
 Returns the localStorage value for the given key, if it exists, otherwise returns false.
 ***
-#### remove()
+### remove()
 	Actual.storage.remove(key)
 
 	Actual.storage.remove('UserName')
 Removes the given key-value pair from localStorage, if it exists.
 ***
-#### empty()
+### empty()
 	Actual.storage.empty()
 Empties the localStorage for your site.
 ***
-#### size()
+### size()
 	Actual.storage.size()
 Returns the byte size of localStorage for your site.
 
 # Dropdown
 
-#### values()
+### values()
 	Actual.dropdown.values(data, targetID, [swap])
 
 	Actual.dropdown.values({ 'Customer': 'C', 'Vendor': 'V', 'Lead': 'L' }, 'customerTypeSelect')
 Populates a dropdown using an object's keys as the option text, and each key's value as the option value, or the opposite if `swap` is `true`.
 ***
-#### byKey()
+### byKey()
 	Actual.dropdown.byKey(data, targetID, valueKey, textKey)
 
 	Actual.dropdown.byKey(users, 'userSelect', 'UserID', 'UserName')
 Populates a dropdown using an array of objects, where the given keys are used as the text and value of the options, respectively.
 ***
-#### selectByText()
+### selectByText()
 	Actual.dropdown.selectByText(targetID, text)
 
 	Actual.dropdown.selectByText('userSelect', 'addama')
 Selects the option whose text matches the given value, if one exists. Useful for when you know what it says, but not what it means.
 ***
-#### hasOptions()
+### hasOptions()
 	Actual.dropdown.hasOptions(targetID)
 
 	Actual.dropdown.hasOptions('userSelect')
 Returns true if the given select has option elements defined already.
 ***
-#### empty()
+### empty()
 	Actual.dropdown.empty(targetID)
 
 	Actual.dropdown.empty('userSelect')
@@ -127,21 +142,21 @@ Removes options from the given select, rendering it empty.
 
 # String
 
-#### toTitleCase()
+### toTitleCase()
 	Actual.string.toTitleCase(string)
 
 	Actual.string.toTitleCase('Understanding your cat')
 	--> 'Understanding Your Cat'
 Converts a string to title case.
 ***
-#### htmlSpecialChars()
+### htmlSpecialChars()
 	Actual.string.htmlSpecialChars(unsafe)
 
 	Actual.string.htmlSpecialChars('The Fast & The Furious <1, 2, 3>')
 	--> 'The Fast &amp; The Furious &lt;1, 2, 3&gt;'
 Sanitizes a string for use in XML. Can easily be modified to be useful in URLs as well/instead.
 ***
-#### makeRandom()
+### makeRandom()
 	Actual.string.makeRandom([length, bits])
 
 	Actual.string.makeRandom(8)
@@ -149,21 +164,21 @@ Sanitizes a string for use in XML. Can easily be modified to be useful in URLs a
 Creates a randomized alphanumeric string of the given length and bits.
 Defaults to 20 characters in length, 36 bits.
 ***
-#### ltrim()
+### ltrim()
 	Actual.string.ltrim(string)
 
 	Actual.string.ltrim('   Oregon')
 	--> 'Oregon'
 Removes leading spaces from the given string.
 ***
-#### rtrim()
+### rtrim()
 	Actual.string.rtrim(string)
 
 	Actual.string.rtrim('Oregon   ')
 	--> 'Oregon'
 Removes trailing spaces from the given string.
 ***
-#### slugify()
+### slugify()
 	Actual.string.slugify(string)
 
 	Actual.string.slugify('Five tips & tricks for Scrum Masters -- Newbie edition')
@@ -172,7 +187,7 @@ Returns a slugified blog URL version of the given string. Can easily be modified
 
 # Type
 
-#### isString()
+### isString()
 	Actual.type.isString(string)
 
 	Actual.type.isString('addama')
@@ -181,7 +196,7 @@ Returns a slugified blog URL version of the given string. Can easily be modified
 	--> false
 Tests if the given value is a string.
 ***
-#### isArray()
+### isArray()
 	Actual.type.isArray(array)
 
 	Actual.type.isArray([ 1, 2, 3 ])
@@ -190,7 +205,7 @@ Tests if the given value is a string.
 	--> false
 Tests if the given value is an array.
 ***
-#### isEmail()
+### isEmail()
 	Actual.type.isEmail(string)
 
 	Actual.type.isEmail('addama.sanders@gmail.com')
@@ -199,7 +214,7 @@ Tests if the given value is an array.
 	--> false
 Tests if the given value is a valid email address.
 ***
-#### isPhone()
+### isPhone()
 	Actual.type.isPhone(string)
 
 	Actual.type.isPhone('1-800-999-9999')
@@ -214,7 +229,7 @@ Tests if the given value is a valid phone number.
 
 # Array
 
-#### pushUnique()
+### pushUnique()
 	Actual.array.pushUnique(array, item)
 
 	Actual.array.pushUnique([ 0, 1, 2 ], 3)
@@ -223,7 +238,7 @@ Tests if the given value is a valid phone number.
 	--> false
 Pushes the given item to an array, but only if that item is not already present. Returns true on successful push, false otherwise.
 ***
-#### unique()
+### unique()
 	Actual.array.unique(array, [alsoSort])
 
 	Actual.array.unique([ 2, 2, 2, 0, 0, 1 ], true)
@@ -235,7 +250,7 @@ If `alsoSort` is `true`, the array is sorted as well.
 
 # Util
 
-#### varDump()
+### varDump()
 	Actual.util.varDump(data)
 
 	Actual.util.varDump(users)
@@ -246,17 +261,17 @@ If `alsoSort` is `true`, the array is sorted as well.
 	]
 Returns a nicely indented variable that is easy to read for logging/debugging purposes.
 ***
-#### fromConsole()
+### fromConsole()
 	Actual.util.fromConsole()
 Returns true if the calling function has been run from the console. 
 Check the output of this function at the beginning of any function you do/don't want run from a console.
 ***
-#### generateUUID()
+### generateUUID()
 	Actual.util.generateUUID()
 	--> '110ec58a-a0f2-4ac4-8393-c866d813b8d1'
 Generates a version 4 Universally Unique Identifier (UUID).
 ***
-#### ajax()
+### ajax()
 	Actual.util.ajax(url, data, method, goodHandler, badHandler)
 
 	Actual.util.ajax('./getUsers.php', { 'dept': 'accounting' }, 'GET', displayUsers, showError)
@@ -264,11 +279,11 @@ A general AJAX function to reach resources in other locations.
 If `data` is defined, it is converted into a URL argument string: `?dept=accounting`.
 Runs the given `goodHandler` if the request was successful, or `badHandler` if not.
 ***
-#### isIE()
+### isIE()
 	Actual.util.isIE()
 Checks if the browser is IE.
 ***
-#### memoize()
+### memoize()
 	Actual.util.memoize(func)
 
 	Actual.util.memoize(calculateCurrentYearProfit)
@@ -276,32 +291,32 @@ Caches the results of a given function so that its operations don't have to be r
 Useful for expensive functions that have infrequently changing values, but that are frequently called.
 Can be easily modified to cache for only a specific length of time.
 ***
-#### debounce()
+### debounce()
 	Actual.util.debounce(func, wait, [isImmediate])
 
 	Actual.util.debounce(validateUserInput, 300, false)
 Prevents a function from being called repeatedly, enforcing a wait time in milliseconds between executions.
 If `isImmediate` is `true`, the function is called immediately after debounce is called.
 ***
-#### copyToClipboard()
+### copyToClipboard()
 	Actual.util.copyToClipboard(text)
 
 	Actual.util.copyToClipboard('110ec58a-a0f2-4ac4-8393-c866d813b8d1')
 Attempts to copy the given value to the clipboard.
 ***
-#### openEmail()
+### openEmail()
 	Actual.util.openEmail(email, [subject, body])
 
 	Actual.util.openEmail('addama.sanders@gmail.com', 'Testing', 'I am testing emails!')
 Constructs a `mailto:` URL, then tells the browser to open a new window/tab to that URL. The browser then decides what to do with it. If a default email provider/handler has been chosen by the user, that program/URL is loaded; otherwise, a popup is shown asking the user to select that default provider/handler.
 ***
-#### wait()
+### wait()
 	Actual.util.wait([ms])
 
 	Actual.util.wait(3000)
 Simulates an asynchronous call that takes a given amount of time. Returns a promise. If no wait time is given, a random wait between 800 and 2000 milliseconds is chosen.
 ***	
-#### getFormData()
+### getFormData()
 	Actual.util.getFormData(parent)
 
 	Actual.util.getFormData('userAddressForm')
