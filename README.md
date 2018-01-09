@@ -8,11 +8,11 @@ Pair with [selectah.js](https://github.com/addama/selectah), my minimal jQuery c
 ## General
 
 	Actual.log([*])
-	Actual.log('UserName is "', userName, '"')\
---> `2011-10-05T14:48:00.000Z handleLogin() UserName is "addama"`
+	Actual.log('UserName is "', userName, '"')
+	--> '2011-10-05T14:48:00.000Z handleLogin() UserName is "addama"'
 A more verbose version of console.log, which has a timestamp and the name of the function that called it.
 
-	Actual.out(message, type)
+	Actual.out(message, [type])
 	Actual.out('Will write to a log file using the included PHP file')
 Returns the promise used to do the write.
 
@@ -57,6 +57,7 @@ Stores the given value in localStorage under the given key. Values are converted
 
 	Actual.storage.get(key)
 	Actual.storage.get('UserName')
+	-> 'addama'
 Returns the localStorage value for the given key, if it exists, otherwise returns false.
 
 	Actual.storage.remove(key)
@@ -95,29 +96,165 @@ Removes options from the given select, rendering it empty.
 
 	Actual.string.toTitleCase(string)
 	Actual.string.toTitleCase('Understanding your cat')
---> `Understanding Your Cat`
+	--> 'Understanding Your Cat'
 Converts a string to title case.
 
 	Actual.string.htmlSpecialChars(unsafe)
 	Actual.string.htmlSpecialChars('The Fast & The Furious <1, 2, 3>')
---> `The Fast &amp; The Furious &lt;1, 2, 3&gt;`
+	--> 'The Fast &amp; The Furious &lt;1, 2, 3&gt;'
 Sanitizes a string for use in XML. Can easily be modified to be useful in URLs as well/instead.
 
-	Actual.string.makeRandom(length, bits)
+	Actual.string.makeRandom([length, bits])
 	Actual.string.makeRandom(8)
---> `A573BEE1`
+	--> 'A573BEE1'
 Creates a randomized alphanumeric string of the given length and bits.
 Defaults to 20 characters in length, 36 bits.
 
 	Actual.string.ltrim(string)
 	Actual.string.ltrim('   Oregon')
---> `Oregon`
+	--> 'Oregon'
 Removes leading spaces from the given string.
 
 	Actual.string.rtrim(string)
 	Actual.string.rtrim('Oregon   ')
---> `Oregon`
+	--> 'Oregon'
 Removes trailing spaces from the given string.
 
+	Actual.string.slugify(string)
+	Actual.string.slugify('Five tips & tricks for Scrum Masters -- Newbie edition')
+	--> 'five-tips-and-tricks-for-scrum-masters-newbie-edition'
+Returns a slugified blog URL version of the given string. Can easily be modified to shorten the slug by removing common words.
 
+## Type
+
+	Actual.type.isString(string)
+	Actual.type.isString('addama')
+	--> true
+	Actual.type.isString(1500)
+	--> false
+Tests if the given value is a string.
+
+	Actual.type.isArray(array)
+	Actual.type.isArray([ 1, 2, 3 ])
+	--> true
+	Actual.type.isArray({ 'UserName': 'addama' })
+	--> false
+Tests if the given value is an array.
+
+	Actual.type.isEmail(string)
+	Actual.type.isEmail('addama.sanders@gmail.com')
+	--> true
+	Actual.type.isEmail('t@t.t')
+	--> false
+Tests if the given value is a valid email address.
+
+	Actual.type.isPhone(string)
+	Actual.type.isPhone('1-800-999-9999')
+	--> true
+	Actual.type.isPhone('18009999999')
+	--> true
+	Actual.type.isPhone('555.5555')
+	--> true
+	Actual.type.isPhone('555.555.5555')
+	--> true
+Tests if the given value is a valid phone number.
+
+## Array
+
+	Actual.array.pushUnique(array, item)
+	Actual.array.pushUnique([ 0, 1, 2 ], 3)
+	--> true
+	Actual.array.pushUnique([ 0, 1, 2 ], 2)
+	--> false
+Pushes the given item to an array, but only if that item is not already present. Returns true on successful push, false otherwise.
+
+	Actual.array.unique(array, [alsoSort])
+	Actual.array.unique([ 2, 2, 2, 0, 0, 1 ], true)
+	--> [ 0, 1, 2 ]
+	Actual.array.unique([ 2, 2, 2, 0, 0, 1 ])
+	--> [ 2, 0, 1 ]
+Returns an array with only unique values from the given array. 
+If `alsoSort` is `true`, the array is sorted as well.
+
+## Util
+
+	Actual.util.varDump(data)
+	Actual.util.varDump(users)
+	--> [
+		{
+			'UserName': 'addama'
+		}
+	]
+Returns a nicely indented variable that is easy to read for logging/debugging purposes.
+
+	Actual.util.fromConsole()
+Returns true if the calling function has been run from the console. 
+Check the output of this function at the beginning of any function you do/don't want run from a console.
+
+	Actual.util.generateUUID()
+	--> '110ec58a-a0f2-4ac4-8393-c866d813b8d1'
+Generates a version 4 Universally Unique Identifier (UUID).
+
+	Actual.util.ajax(url, data, method, goodHandler, badHandler)
+	Actual.util.ajax('./getUsers.php', { 'dept': 'accounting' }, 'GET', displayUsers, showError)
+A general AJAX function to reach resources in other locations. 
+If `data` is defined, it is converted into a URL argument string: `?dept=accounting`.
+Runs the given `goodHandler` if the request was successful, or `badHandler` if not.
+
+	Actual.util.isIE()
+Checks if the browser is IE.
+
+	Actual.util.memoize(func)
+	Actual.util.memoize(calculateCurrentYearProfit)
+Caches the results of a given function so that its operations don't have to be run again every time the function is called.
+Useful for expensive functions that have infrequently changing values, but that are frequently called.
+Can be easily modified to cache for only a specific length of time.
+
+	Actual.util.debounce(func, wait, [isImmediate])
+	Actual.util.debounce(validateUserInput, 300, false)
+Prevents a function from being called repeatedly, enforcing a wait time in milliseconds between executions.
+If `isImmediate` is `true`, the function is called immediately after debounce is called.
+
+	Actual.util.copyToClipboard(text)
+	Actual.util.copyToClipboard('110ec58a-a0f2-4ac4-8393-c866d813b8d1')
+Attempts to copy the given value to the clipboard.
+
+	Actual.util.openEmail(email, [subject, body])
+	Actual.util.openEmail('addama.sanders@gmail.com', 'Testing', 'I am testing emails!')
+Constructs a `mailto:` URL, then tells the browser to open a new window/tab to that URL. The browser then decides what to do with it. If a default email provider/handler has been chosen by the user, that program/URL is loaded; otherwise, a popup is shown asking the user to select that default provider/handler.
+
+	Actual.util.wait([ms])
+	Actual.util.wait(3000)
+Simulates an asynchronous call that takes a given amount of time. Returns a promise. If no wait time is given, a random wait between 800 and 2000 milliseconds is chosen.
+		
+	Actual.util.getFormData(parent)
+	Actual.util.getFormData('userAddressForm')
+	--> {
+		'street': {
+			'id': 'userAddress_street',
+			'name': 'street',
+			'type': 'text',
+			'value': '123 Test Ln',
+			'disabled': false,
+			'required': true
+		},
+		'state': {
+			'id': 'userAddress_state',
+			'name': 'state',
+			'type': 'select',
+			'value': 'OR',
+			'disabled': false,
+			'required': true
+		}
+		'wantsMail': {
+			'id': 'userAddress_wantsMail',
+			'name': 'wantsMail',
+			'type': 'checkbox',
+			'checked': false
+			'disabled': false,
+			'required': false
+		}
+	}
+Creates an object containing useful information about all form elements (input, textarea, select, checkbox, radio) in the given parent element. 
+Information includes: the element ID, the element name, the type (element type, unless element type is `input`, then the input type (phone, email, text, password, etc)), and whether the field is disabled or required.
 	

@@ -92,66 +92,6 @@ var Actual = {
 			});
 		},
 	},
-
-	route: {
-		add: function routeAdd(path, name, parent, handler) {
-			// Registers a route and its info
-			Actual.routes[path] = {
-				'name': name, 'path': path, 'handler': handler, 'parent': parent
-			};
-		},
-		
-		remove: function routeRemove(path) {
-			// Deletes a route
-			delete Actual.routes[path];
-		},
-		
-		listen: function routeListen(element) {
-			// Listens for changes to the hash portion of the URL
-			// If a hash that has been registered as a route is used, it runs the handler,
-			// giving it the element it has been allowed to work within, and any arguments
-			if (Object.keys(Actual.routes).length > 0) {
-				if (element) {
-					var handler = function hashChange(event) {
-						var path = location.hash.slice(1) || '/';
-						var levels = path.split('/').length;
-						var split = path.split('/');
-						split.shift();
-						
-						if (Actual.routes[path]) {
-							var parent = Actual.routes[path].parent;
-							Actual.routes[path].handler.call(parent, path.split('/').slice(levels));
-						} else {
-							var temp = path.split('/');
-							for (var i = 1; i < levels; i++) {
-								if (Actual.routes[temp.join('/')]) {
-									path = temp.join('/');
-									var parent = Actual.routes[path].parent;
-									Actual.routes[path].handler.call(parent, split.slice(levels - i));
-									break;
-								}
-								temp.pop();
-							}
-						}
-					};
-					window.onhashchange = handler;
-					window.onload = handler;
-					Actual.log('Actual is now listening for hashchanges on ' + Object.keys(Actual.routes).length + ' route(s)', 'local');
-				} else {
-					Actual.log('Cannot apply route changes - no target element given', 'local');
-				}
-			} else {
-				Actual.log('Cannot listen to route changes - no routes have been defined.', 'local');
-			}
-		},
-	
-		move: function routeMove(path) {
-			// Moves the browser to the given hash route
-			if (Actual.routes[path]) {
-				window.location.href = window.location.href.replace(/#(.*)$/, '') + '#' + path
-			}
-		},
-	},
 	
 	storage: {
 		isAvailable: function isAvailable() {
@@ -510,6 +450,7 @@ var Actual = {
 			//
 			// If the element is a normal input, the type will be the input type
 			var result = {};
+			if (parent.charAt(0) === '#') parent = parent.substring(1);
 			var elements = document.getElementById(parent).querySelectorAll('input, textarea, select');
 			for (var i = 0, l = elements.length; i < l; i++) {
 				var element = elements[i];
