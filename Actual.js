@@ -160,9 +160,8 @@ var Actual = {
 		isAvailable: function isAvailable() {
 			// Determines if localStorage is available
 			try {
-				var storage = window.localStorage;
-				strorage.setItem('__test__', '?');
-				storage.removeItem('__test__');
+				localStorage.setItem('__test__', '?');
+				localStorage.removeItem('__test__');
 				return true;
 			} catch(e) {
 				return false;
@@ -171,27 +170,31 @@ var Actual = {
 		
 		put: function storagePut(key, value) {
 			// Adds a key/value pair to localStorage
+			if (typeof value !== 'string') data = JSON.stringify(data);
 			try {
-				window.localStorage.setItem(key, value);
+				localStorage.setItem(key, value);
+				return true
 			} catch(e) {
 				console.error('Could not save {'+key+':'+value+'} to localStorage:', e);
+				return false;
 			}
 		},
 		
 		get: function storageGet(key) {
 			// Retrieves a localStorage value for the given key
-			window.localStorage.getItem(key);
+			if (localStorage.length) return localStorage.getItem(key);
+			return false;
 		},
 		
 		remove: function storageRemove(key) {
 			// Removes the given key from localStorage
 			// Does not complain if that key doesn't exist
-			window.localStorage.removeItem(key);
+			localStorage.removeItem(key);
 		},
 		
 		empty: function storageEmpty() {
 			// Clears localStorage 
-			window.localStorage.clear();
+			if (localStorage.length) localStorage.clear();
 		},
 		
 		size: function storageSize() {
