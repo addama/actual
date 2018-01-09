@@ -1,12 +1,10 @@
 var Actual = {
 	cookieExpire: 14,
 	routes: {},
-	// The location of the main actual.php file
-	phpLoc: './',
+	phpFile: './Actual.php',	// The location of the main actual.php file
 	
 	log: function log() {
 		// A slightly more verbose console.log
-		// Does not do multiple arguments like console.log does, though
 		var caller = Actual.log.caller.name || '';
 		var args = [].slice.call(arguments);
 		var now = new Date().toISOString();
@@ -15,7 +13,7 @@ var Actual = {
 	
 	out: function out(message, type) {
 		// Writes log messages to a file
-		return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
+		return Actual.util.ajax(Actual.phpFile, {
 			op: 'log',
 			m: message || 'No message',
 			t: type || 'info',
@@ -26,7 +24,6 @@ var Actual = {
 		put: function cookieBake(name, value, expires) {
 			// Bakes a new cookie. If no expires date is provided, the cookie will become a session cookie.
 			var cookie = name + '=' + encodeURI(value) + ';';
-
 			if (expires) {
 				expires = new Date(expires);
 				cookie += 'expires=' + expires.toUTCString() + ';';
@@ -48,7 +45,7 @@ var Actual = {
 			// Deletes a given cookie by setting an expiration date in the past
 			if (Actual.cookie.get(name)) {
 				var date = new Date(1985, 3, 22);
-				Actual.cookie.bake(name, '', date);
+				Actual.cookie.put(name, '', date);
 			}
 		},
 	
@@ -63,7 +60,7 @@ var Actual = {
 	file: {
 		load: function fileLoad(name, handler) {
 			// Load a file and return the contents
-			return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
+			return Actual.util.ajax(Actual.phpFile, {
 				op: 'load',
 				f: name
 			}, 'GET', function(result) {
@@ -81,7 +78,7 @@ var Actual = {
 			// Save content to the file
 			// If no contents are given, the file is wiped out
 			// Be careful!
-			return Actual.util.ajax(Actual.phpLoc+'Actual.php', {
+			return Actual.util.ajax(Actual.phpFile, {
 				op: 'save',
 				f: name,
 				d: content || ''
@@ -175,7 +172,7 @@ var Actual = {
 				localStorage.setItem(key, value);
 				return true
 			} catch(e) {
-				console.error('Could not save {'+key+':'+value+'} to localStorage:', e);
+				Actual.log('Could not save {'+key+':'+value+'} to localStorage:', e);
 				return false;
 			}
 		},
@@ -189,7 +186,7 @@ var Actual = {
 		remove: function storageRemove(key) {
 			// Removes the given key from localStorage
 			// Does not complain if that key doesn't exist
-			localStorage.removeItem(key);
+			if (localStorage.length) localStorage.removeItem(key);
 		},
 		
 		empty: function storageEmpty() {
@@ -208,7 +205,7 @@ var Actual = {
 	dropdown: {
 		values: function values(data, targetID, swap) {
 			// Populates a dropdown using an object's keys as the text and each key's
-			// value as the option value
+			// value as the option value, or the opposite if swap is true
 			if (!swap) swap = false;
 			if (targetID.charAt(0) === '#') targetID = targetID.substring(1);
 			var element = document.getElementById(targetID);
@@ -268,8 +265,10 @@ var Actual = {
 
 	string: {
 		toTitleCase: function toTitleCase(string) {
-			// Converts a string to proper case: String, Addama, Power
-			return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()});
+			// Converts a string to proper case: Title Case String
+			return string.replace(/\w\S*/g, function(txt){ 
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() 
+			});
 		},
 		
 		htmlSpecialChars: function htmlSpecialChars(unsafe) {
@@ -278,7 +277,7 @@ var Actual = {
 			return unsafe;
 		},
 		
-		makeRandomString: function makeRandomString(length, bits) {
+		makeRandom: function makeRandomString(length, bits) {
 			// Creates a randomized string of the given length, in the given bits
 			// Useful for creating generic but unique IDs, session keys, or whatever
 			// See also Actual.util.generateUUID()
@@ -474,9 +473,9 @@ var Actual = {
 			hidden.select();
 			try {
 				document.execCommand('copy');
-				console.info('Copied '+text+' to clipboard!');
+				Actual.log('Copied '+text+' to clipboard!');
 			} catch(error) {
-				console.error('Couldn\'t copy '+text+' to clipboard', hidden, text);
+				Actual.log('Couldn\'t copy '+text+' to clipboard', hidden, text);
 			}
 			hidden.remove();	
 		},
